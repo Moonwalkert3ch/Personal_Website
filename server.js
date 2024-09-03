@@ -4,6 +4,7 @@ const express = require('express');
 const nodemailer = require('nodemailer');
 const bodyParser = require('body-parser');
 const path = require('path');
+const mongoose = require('mongoose');
 
 const app = express();
 
@@ -11,7 +12,7 @@ const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-// serve static files from root directory
+// Serve static files from root directory
 app.use(express.static(__dirname));
 
 // Configure Nodemailer with environment variables
@@ -25,6 +26,22 @@ const transporter = nodemailer.createTransport({
   }
 });
 
+// MongoDB connection
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('MongoDB connected'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Define Comment Schema and Model
+const commentSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+  subject: String,
+  message: String,
+  createdAt: { type: Date, default: Date.now }
+});
+
+const Comment = mongoose.model('Comment', commentSchema);
+
 // Route to handle sending emails
 app.post('/send-email', (req, res) => {
   const { name, email, subject, message } = req.body;
@@ -36,9 +53,6 @@ app.post('/send-email', (req, res) => {
     text: message,
   };
 
-// test email config
-
-
   transporter.sendMail(mailOptions, (error, info) => {
     if (error) {
       console.error('Error sending email:', error);
@@ -46,6 +60,37 @@ app.post('/send-email', (req, res) => {
     }
     res.status(200).send('Your message has been sent successfully!');
   });
+});
+
+// Route to handle comments
+app.post('/comments', async (req, res) => {
+  try {
+    const { name, email, subject, message } = req.body;
+
+    const newComment = new Comment({
+      name,
+      email,
+      subject,
+      message
+    });
+
+    await newComment.save();
+    res.status(201).send('Comment added successfully!');
+  } catch (error) {
+    console.error('Error adding comment:', error);
+    res.status(500).send('An error occurred while adding the comment.');
+  }
+});
+
+// Route to get comments
+app.get('/comments', async (req, res) => {
+  try {
+    const comments = await Comment.find().sort({ createdAt: -1 });
+    res.json(comments);
+  } catch (error) {
+    console.error('Error fetching comments:', error);
+    res.status(500).send('An error occurred while fetching comments.');
+  }
 });
 
 // Route for home page

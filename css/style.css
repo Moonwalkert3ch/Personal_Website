@@ -903,6 +903,18 @@ a:hover {
   position: relative;
 }
 
+.card .card-img {
+  width: 100%; /* Ensure the image spans the full width */
+  height: 175px; /* Fixed height for the image */
+  overflow: hidden; /* Hide any overflow to keep the container clean */
+}
+
+.card .card-img img {
+  width: 100%; /* Make sure the image fills the container */
+  height: 100%; /* Make sure the image matches the height of the container */
+  object-fit: cover; /* Cover the container without distortion */
+}
+
 .card-blog .card-category-box {
   position: absolute;
   text-align: center;

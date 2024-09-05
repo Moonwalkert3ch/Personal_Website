@@ -790,10 +790,12 @@ a:hover {
 }
 
 /*--------------------------------------------------------------
-# Resume Section
+# testimonial section
 --------------------------------------------------------------*/
 
-
+.rounded-circle #img-circle {
+  height: 25px;
+}
 
 /*======================================
 //--//-->   PORTFOLIO
@@ -872,6 +874,7 @@ a:hover {
 
 .testimonial-box .author-test img {
   margin: 0 auto;
+  height: 185px;
 }
 
 .testimonial-box .author {

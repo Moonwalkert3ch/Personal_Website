@@ -1,19 +1,20 @@
 jQuery(document).ready(function($) {
   "use strict";
 
-  //Contact
-  $('form.contactForm').submit(function() {
-    var f = $(this).find('.form-group'),
+  // Contact Form Submission
+  $('#sendMessageButton').on('click', function(event) {
+    event.preventDefault(); // Prevent default button behavior
+
+    var f = $('.contactForm').find('.form-group'),
       ferror = false,
       emailExp = /^[^\s()<>@,;:\/]+@\w[\w\.-]+\.[a-z]{2,}$/i;
 
-    f.children('input').each(function() { // run all inputs
-
-      var i = $(this); // current input
+    f.children('input').each(function() { // Validate all inputs
+      var i = $(this); // Current input
       var rule = i.attr('data-rule');
 
       if (rule !== undefined) {
-        var ierror = false; // error flag for current input
+        var ierror = false; // Error flag for current input
         var pos = rule.indexOf(':', 0);
         if (pos >= 0) {
           var exp = rule.substr(pos + 1, rule.length);
@@ -42,7 +43,7 @@ jQuery(document).ready(function($) {
             break;
 
           case 'checked':
-            if (! i.is(':checked')) {
+            if (!i.is(':checked')) {
               ferror = ierror = true;
             }
             break;
@@ -57,13 +58,13 @@ jQuery(document).ready(function($) {
         i.next('.validation').html((ierror ? (i.attr('data-msg') !== undefined ? i.attr('data-msg') : 'wrong Input') : '')).show('blind');
       }
     });
-    f.children('textarea').each(function() { // run all inputs
 
-      var i = $(this); // current input
+    f.children('textarea').each(function() { // Validate textareas
+      var i = $(this); // Current textarea
       var rule = i.attr('data-rule');
 
       if (rule !== undefined) {
-        var ierror = false; // error flag for current input
+        var ierror = false; // Error flag for current input
         var pos = rule.indexOf(':', 0);
         if (pos >= 0) {
           var exp = rule.substr(pos + 1, rule.length);
@@ -88,31 +89,41 @@ jQuery(document).ready(function($) {
         i.next('.validation').html((ierror ? (i.attr('data-msg') != undefined ? i.attr('data-msg') : 'wrong Input') : '')).show('blind');
       }
     });
-    if (ferror) return false;
-    else var str = $(this).serialize();
-    var action = $(this).attr('action');
-    if( ! action ) {
-      action = 'contactform/contactform.php';
-    }
-    $.ajax({
-      type: "POST",
-      url: action,
-      data: str,
-      success: function(msg) {
-        // alert(msg);
-        if (msg == 'OK') {
-          $("#sendmessage").addClass("show");
-          $("#errormessage").removeClass("show");
-          $('.contactForm').find("input, textarea").val("");
-        } else {
-          $("#sendmessage").removeClass("show");
-          $("#errormessage").addClass("show");
-          $('#errormessage').html(msg);
-        }
 
-      }
-    });
-    return false;
+    if (ferror) return false; // Stop if there are errors
+
+    // Send email using sendMail function
+    sendMail();
   });
 
+  // Send email using EmailJS
+  function sendMail() {
+    var nameField = document.getElementById("name");
+    var emailField = document.getElementById("email");
+    var messageField = document.getElementById("message");
+
+    if (!nameField || !emailField || !messageField) {
+      console.error("Form fields are missing");
+      return;
+    }
+
+    var params = {
+      name: nameField.value,
+      email: emailField.value,
+      message: messageField.value,
+    };
+
+    const serviceID = "service_ifn11gd";
+    const templateID = "template_f27lgpl";
+
+    emailjs.send(serviceID, templateID, params)
+      .then(res => {
+        nameField.value = "";
+        emailField.value = "";
+        messageField.value = "";
+        console.log(res);
+        alert("Your message sent successfully!!");
+      })
+      .catch(err => console.log(err));
+  }
 });
